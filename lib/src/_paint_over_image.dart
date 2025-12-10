@@ -695,16 +695,24 @@ class ImagePainterState extends State<ImagePainter> {
         _controller.mode == PaintMode.pin) {
       if (!_isLongPress) {
         log('not long press');
-          _addEndPoints();
-          _addPaintHistory(
-            PaintInfo(
-              mode: PaintMode.text,
-              text: _textController.text,
-              offsets: [],
-              color: _controller.color,
-              strokeWidth: _controller.scaledStrokeWidth,
-            ),
-          );
+        _addPaintHistory(
+          PaintInfo(
+            mode: PaintMode.pin,
+            offsets: <Offset?>[_controller.start], 
+            color: _controller.color,
+            strokeWidth: _controller.scaledStrokeWidth,
+          ),
+        );
+          // _addEndPoints();
+          // _addPaintHistory(
+          //   PaintInfo(
+          //     mode: PaintMode.text,
+          //     text: _textController.text,
+          //     offsets: [],
+          //     color: _controller.color,
+          //     strokeWidth: _controller.scaledStrokeWidth,
+          //   ),
+          // );
         }
       
     } else if (_controller.start != null &&
