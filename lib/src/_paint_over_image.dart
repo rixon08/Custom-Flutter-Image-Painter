@@ -377,6 +377,10 @@ class ImagePainterState extends State<ImagePainter> {
 
   int _strokeMultiplier = 1;
   late TextDelegate textDelegate;
+
+  bool _isLongPress = false;
+  DateTime? _gestureStartTime;
+  
   @override
   void initState() {
     super.initState();
@@ -511,17 +515,16 @@ class ImagePainterState extends State<ImagePainter> {
         children: [
           if (widget.controlsAtTop && widget.showControls) _buildControls(),
           Expanded(
-            child: FittedBox(
-              alignment: FractionalOffset.center,
-              child: ClipRect(
+            child: ClipRect(
                 child: AnimatedBuilder(
                   animation: _controller,
                   builder: (context, child) {
                     return InteractiveViewer(
                       transformationController: _transformationController,
-                      maxScale: 2.4,
+                      maxScale: 8.0,
                       minScale: 1,
-                      panEnabled: _controller.mode == PaintMode.none,
+                      boundaryMargin: const EdgeInsets.all(100),
+                      panEnabled: true,// _controller.mode == PaintMode.none,
                       scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
                       onInteractionUpdate: _scaleUpdateGesture,
                       onInteractionStart: _scaleStartGesturePin,
@@ -539,7 +542,6 @@ class ImagePainterState extends State<ImagePainter> {
                   },
                 ),
               ),
-            ),
           ),
           if (!widget.controlsAtTop && widget.showControls) _buildControls(),
           SizedBox(height: MediaQuery.of(context).padding.bottom)
@@ -621,24 +623,26 @@ class ImagePainterState extends State<ImagePainter> {
         _transformationController.toScene(onUpdate.localFocalPoint);
     
     if (onUpdate.pointerCount < 2) {
+      _isLongPress = false;
+      _gestureStartTime = DateTime.now();
       log(onUpdate.pointerCount.toString());
       _controller.setInProgress(true);
       if (_controller.start == null) {
         _controller.setStart(_zoomAdjustedOffset);
       }
       _controller.setEnd(_zoomAdjustedOffset);
-      if (_controller.mode == PaintMode.pin) {
-         _addEndPoints();
-        _addPaintHistory(
-          PaintInfo(
-            mode: PaintMode.text,
-            text: _textController.text,
-            offsets: [],
-            color: _controller.color,
-            strokeWidth: _controller.scaledStrokeWidth,
-          ),
-        );
-      }
+      // if (_controller.mode == PaintMode.pin) {
+      //    _addEndPoints();
+      //   _addPaintHistory(
+      //     PaintInfo(
+      //       mode: PaintMode.text,
+      //       text: _textController.text,
+      //       offsets: [],
+      //       color: _controller.color,
+      //       strokeWidth: _controller.scaledStrokeWidth,
+      //     ),
+      //   );
+      // }
     }
   }
 
@@ -646,9 +650,18 @@ class ImagePainterState extends State<ImagePainter> {
 
   ///Fires while user is interacting with the screen to record painting.
   void _scaleUpdateGesture(ScaleUpdateDetails onUpdate) {
+    log('scale update gesture');
     final _zoomAdjustedOffset =
         _transformationController.toScene(onUpdate.localFocalPoint);
-        if (onUpdate.pointerCount < 2) {
+    if (onUpdate.pointerCount < 2) {
+
+    if (_gestureStartTime != null && !_isLongPress) {
+      final duration = DateTime.now().difference(_gestureStartTime!);
+      if (duration.inMilliseconds > 100) { // Threshold untuk long press (500ms)
+        _isLongPress = true;
+        log('long press');
+      }
+    }
     _controller.setInProgress(true);
     if (_controller.start == null) {
       _controller.setStart(_zoomAdjustedOffset);
@@ -668,6 +681,7 @@ class ImagePainterState extends State<ImagePainter> {
 
   ///Fires when user stops interacting with the screen.
   void _scaleEndGesture(ScaleEndDetails onEnd) {
+    log('scale end gesture');
     _controller.setInProgress(false);
     if (onEnd.pointerCount < 2) {
     if (_controller.start != null &&
@@ -678,10 +692,33 @@ class ImagePainterState extends State<ImagePainter> {
       _controller.offsets.clear();
     } else if (_controller.start != null &&
         _controller.end != null &&
-        _controller.mode != PaintMode.text && _controller.mode != PaintMode.pin) {
-      _addEndPoints();
+        _controller.mode == PaintMode.pin) {
+      if (!_isLongPress) {
+        log('not long press');
+          _addEndPoints();
+          _addPaintHistory(
+            PaintInfo(
+              mode: PaintMode.text,
+              text: _textController.text,
+              offsets: [],
+              color: _controller.color,
+              strokeWidth: _controller.scaledStrokeWidth,
+            ),
+          );
+        }
+      
+    } else if (_controller.start != null &&
+        _controller.end != null &&
+        _controller.mode != PaintMode.text) {
+          if (!_isLongPress) {
+          _addEndPoints();
+        }
     }}
+    // Reset tracking variables
+    _isLongPress = false;
+    _gestureStartTime = null;
     _controller.resetStartAndEnd();
+    log('reset start and end');
   }
 
   void _addEndPoints() => _addPaintHistory(
