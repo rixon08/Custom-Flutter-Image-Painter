@@ -863,7 +863,7 @@ class ImagePainterState extends State<ImagePainter> {
               return Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode == PaintMode.none ? Colors.grey[300] : Colors.transparent,
+                  color: _controller.mode == PaintMode.none ? const ui.Color.fromARGB(255, 164, 164, 164) : Colors.transparent,
                 ),
                 padding: const EdgeInsets.all(13),
                 child: InkWell(
@@ -887,7 +887,7 @@ class ImagePainterState extends State<ImagePainter> {
               return Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode != PaintMode.none ? Colors.grey[300] : Colors.transparent,
+                  color: _controller.mode != PaintMode.none ? const ui.Color.fromARGB(255, 164, 164, 164) : Colors.transparent,
                 ),
                 padding: const EdgeInsets.all(5),
                 child: PopupMenuButton(
