@@ -395,7 +395,10 @@ class ImagePainterState extends State<ImagePainter> {
         color: widget.initialColor,
       );
     }
-    _paintButtonPaintMode = widget.initialPaintMode ?? PaintMode.freeStyle;
+    _paintButtonPaintMode = (widget.initialPaintMode ?? PaintMode.freeStyle) ==
+            PaintMode.none
+        ? PaintMode.freeStyle
+        : (widget.initialPaintMode ?? PaintMode.freeStyle);
     _resolveAndConvertImage();
 
     _textController = TextEditingController();
@@ -730,6 +733,7 @@ class ImagePainterState extends State<ImagePainter> {
                       if (widget.onPaintModeChanged != null) {
                         widget.onPaintModeChanged!(item.mode);
                       }
+                      _paintButtonPaintMode = item.mode;
                       _controller.setMode(item.mode);
 
                       Navigator.of(context).pop();
@@ -877,8 +881,8 @@ class ImagePainterState extends State<ImagePainter> {
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
-              final icon = _controller.mode == PaintMode.none ? Icons.location_pin : paintModes(textDelegate)
-                  .firstWhere((item) => item.mode == _controller.mode)
+              final icon = paintModes(textDelegate)
+                  .firstWhere((item) => item.mode == _paintButtonPaintMode)
                   .icon;
               return Container(
                 decoration: BoxDecoration(
