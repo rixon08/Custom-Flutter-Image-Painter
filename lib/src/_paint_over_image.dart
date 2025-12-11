@@ -863,9 +863,9 @@ class ImagePainterState extends State<ImagePainter> {
               return Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode == PaintMode.none ? const ui.Color.fromARGB(255, 164, 164, 164) : Colors.transparent,
+                  color: _controller.mode == PaintMode.none ? const ui.Color.fromARGB(255, 190, 190, 190) : Colors.transparent,
                 ),
-                padding: const EdgeInsets.all(13),
+                padding: const EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () {
                     if (widget.onPaintModeChanged != null) {
@@ -887,7 +887,7 @@ class ImagePainterState extends State<ImagePainter> {
               return Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode != PaintMode.none ? const ui.Color.fromARGB(255, 164, 164, 164) : Colors.transparent,
+                  color: _controller.mode != PaintMode.none ? const ui.Color.fromARGB(255, 190, 190, 190) : Colors.transparent,
                 ),
                 padding: const EdgeInsets.all(5),
                 child: PopupMenuButton(
