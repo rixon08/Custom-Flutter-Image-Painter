@@ -853,16 +853,45 @@ class ImagePainterState extends State<ImagePainter> {
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
+              final icon = Icons.zoom_out_map;
+              return Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _controller.mode == PaintMode.none ? Colors.grey[300] : Colors.transparent,
+                ),
+                padding: const EdgeInsets.all(5),
+                child: InkWell(
+                  onTap: () {
+                    if (widget.onPaintModeChanged != null) {
+                        widget.onPaintModeChanged!(PaintMode.none);
+                      }
+                      _controller.setMode(PaintMode.none);
+                  },
+                  child: Icon(icon, color: Colors.grey[700])
+                )
+              );
+            },
+          ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
               final icon = paintModes(textDelegate)
                   .firstWhere((item) => item.mode == _controller.mode)
                   .icon;
-              return PopupMenuButton(
-                tooltip: textDelegate.changeMode,
-                shape: ContinuousRectangleBorder(
-                  borderRadius: BorderRadius.circular(40),
+              return Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _controller.mode != PaintMode.none ? Colors.grey[300] : Colors.transparent,
                 ),
-                icon: Icon(icon, color: Colors.grey[700]),
-                itemBuilder: (_) => [_showOptionsRow()],
+                padding: const EdgeInsets.all(5),
+                child: PopupMenuButton(
+                  tooltip: textDelegate.changeMode,
+                  shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  icon: Icon(icon, color: Colors.grey[700]),
+                  itemBuilder: (_) => [_showOptionsRow()],
+                )
               );
             },
           ),
