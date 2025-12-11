@@ -371,6 +371,7 @@ class ImagePainterState extends State<ImagePainter> {
   final _repaintKey = GlobalKey();
   ui.Image? _image;
   late Controller _controller;
+  late PaintMode _paintButtonPaintMode;
   late final ValueNotifier<bool> _isLoaded;
   late final TextEditingController _textController;
   late final TransformationController _transformationController;
@@ -394,6 +395,7 @@ class ImagePainterState extends State<ImagePainter> {
         color: widget.initialColor,
       );
     }
+    _paintButtonPaintMode = widget.initialPaintMode ?? PaintMode.freeStyle;
     _resolveAndConvertImage();
 
     _textController = TextEditingController();
@@ -859,7 +861,7 @@ class ImagePainterState extends State<ImagePainter> {
                   shape: BoxShape.circle,
                   color: _controller.mode == PaintMode.none ? Colors.grey[300] : Colors.transparent,
                 ),
-                padding: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(10),
                 child: InkWell(
                   onTap: () {
                     if (widget.onPaintModeChanged != null) {
