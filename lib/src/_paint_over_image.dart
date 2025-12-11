@@ -390,7 +390,7 @@ class ImagePainterState extends State<ImagePainter> {
       );
     } else {
       _controller.update(
-        mode: widget.initialPaintMode,
+        mode: PaintMode.none,
         strokeWidth: widget.initialStrokeWidth,
         color: widget.initialColor,
       );
