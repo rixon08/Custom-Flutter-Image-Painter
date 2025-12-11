@@ -875,7 +875,7 @@ class ImagePainterState extends State<ImagePainter> {
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
-              final icon = paintModes(textDelegate)
+              final icon = _controller.mode == PaintMode.none ? Icons.location_pin : paintModes(textDelegate)
                   .firstWhere((item) => item.mode == _controller.mode)
                   .icon;
               return Container(
