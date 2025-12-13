@@ -79,7 +79,7 @@ class _ImagePainterExampleState extends State<ImagePainterExample> {
         "assets/sample.jpg",
         key: _imageKey,
         
-        initialStrokeWidth: 2,
+        initialStrokeWidth: 1,
         textDelegate: TextDelegate(),
         initialColor: Colors.green,
         initialPaintMode: PaintMode.line,

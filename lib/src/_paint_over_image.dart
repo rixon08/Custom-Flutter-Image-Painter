@@ -512,42 +512,46 @@ class ImagePainterState extends State<ImagePainter> {
     return Container(
       height: widget.height ?? double.maxFinite,
       width: widget.width ?? double.maxFinite,
-      child: Column(
+      child: Stack (
+        alignment: Alignment.topRight,
         children: [
-          if (widget.controlsAtTop && widget.showControls) _buildControls(),
-          Expanded(
-            child: ClipRect(
-              child: AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return InteractiveViewer(
-                    boundaryMargin: EdgeInsets.all(100),
-                    transformationController: _transformationController,
-                    maxScale: 8.0,
-                    minScale: 1,
-                    panEnabled: _controller.mode == PaintMode.none,
-                    scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
-                    onInteractionUpdate: _scaleUpdateGesture,
-                    onInteractionStart: _scaleStartGesturePin,
-                    onInteractionEnd: _scaleEndGesture,
-                    child: CustomPaint(
-                      size: imageSize,
-                      willChange: true,
-                      isComplex: true,
-                      painter: DrawImage(
-                        image: _image,
-                        controller: _controller,
-                      ),
-                    ),
-                  );
-                },
+          Column(
+            children: [
+              Expanded(
+                child: ClipRect(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      return InteractiveViewer(
+                        boundaryMargin: EdgeInsets.all(100),
+                        transformationController: _transformationController,
+                        maxScale: 8.0,
+                        minScale: 1,
+                        panEnabled: _controller.mode == PaintMode.none,
+                        scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
+                        onInteractionUpdate: _scaleUpdateGesture,
+                        onInteractionStart: _scaleStartGesturePin,
+                        onInteractionEnd: _scaleEndGesture,
+                        child: CustomPaint(
+                          size: imageSize,
+                          willChange: true,
+                          isComplex: true,
+                          painter: DrawImage(
+                            image: _image,
+                            controller: _controller,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom)
+            ],
           ),
-          if (!widget.controlsAtTop && widget.showControls) _buildControls(),
-          SizedBox(height: MediaQuery.of(context).padding.bottom)
-        ],
-      ),
+          if (widget.showControls) 
+            _buildVerticalControls(),
+        ])
     );
   }
 
@@ -632,15 +636,15 @@ class ImagePainterState extends State<ImagePainter> {
       _controller.setEnd(_zoomAdjustedOffset);
       if (_controller.mode == PaintMode.pin) {
          _addEndPoints();
-        _addPaintHistory(
-          PaintInfo(
-            mode: PaintMode.text,
-            text: _textController.text,
-            offsets: [],
-            color: _controller.color,
-            strokeWidth: _controller.scaledStrokeWidth,
-          ),
-        );
+        // _addPaintHistory(
+        //   PaintInfo(
+        //     mode: PaintMode.text,
+        //     text: _textController.text,
+        //     offsets: [],
+        //     color: _controller.color,
+        //     strokeWidth: _controller.scaledStrokeWidth,
+        //   ),
+        // );
       }
     }
   }
@@ -957,6 +961,131 @@ class ImagePainterState extends State<ImagePainter> {
           ),
           
           const Spacer(),
+          IconButton(
+            tooltip: textDelegate.undo,
+            icon: widget.undoIcon ?? Icon(Icons.reply, color: Colors.grey[700]),
+            onPressed: () => _controller.undo(),
+          ),
+          IconButton(
+            tooltip: textDelegate.clearAllProgress,
+            icon: widget.clearAllIcon ??
+                Icon(Icons.clear, color: Colors.grey[700]),
+            onPressed: () => _controller.clear(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalControls() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      color: Colors.black.withValues(alpha: 0.7),
+      width: 80,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              final icon = Icons.zoom_out_map;
+              return Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _controller.mode == PaintMode.none ? const ui.Color.fromARGB(255, 190, 190, 190) : Colors.transparent,
+                ),
+                padding: const EdgeInsets.all(15),
+                child: InkWell(
+                  onTap: () {
+                    if (widget.onPaintModeChanged != null) {
+                        widget.onPaintModeChanged!(PaintMode.none);
+                      }
+                      _controller.setMode(PaintMode.none);
+                  },
+                  child: Icon(icon, color: Colors.grey[700])
+                )
+              );
+            },
+          ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              final icon = paintModes(textDelegate)
+                  .firstWhere((item) => item.mode == _paintButtonPaintMode)
+                  .icon;
+              return Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _controller.mode != PaintMode.none ? const ui.Color.fromARGB(255, 190, 190, 190) : Colors.transparent,
+                ),
+                padding: const EdgeInsets.all(5),
+                child: PopupMenuButton(
+                  tooltip: textDelegate.changeMode,
+                  shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  icon: Icon(icon, color: Colors.grey[700]),
+                  itemBuilder: (_) => [_showOptionsRow()],
+                )
+              );
+            },
+          ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              return PopupMenuButton(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: ContinuousRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                tooltip: textDelegate.changeColor,
+                icon: widget.colorIcon ??
+                    Container(
+                      padding: const EdgeInsets.all(2.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey),
+                        color: _controller.color,
+                      ),
+                    ),
+                itemBuilder: (_) => [_showColorPicker()],
+              );
+            },
+          ),
+          PopupMenuButton(
+            tooltip: textDelegate.changeBrushSize,
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            icon:
+                widget.brushIcon ?? Icon(Icons.brush, color: Colors.grey[700]),
+            itemBuilder: (_) => [_showRangeSlider()],
+          ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              if (_controller.canFill()) {
+                return Row(
+                  children: [
+                    Checkbox.adaptive(
+                      value: _controller.shouldFill,
+                      onChanged: (val) {
+                        _controller.update(fill: val);
+                      },
+                    ),
+                    Text(
+                      'Fill',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    )
+                  ],
+                );
+              } else {
+                return const SizedBox();
+              }
+            },
+          ),
+          
+          const SizedBox(height: 10),
           IconButton(
             tooltip: textDelegate.undo,
             icon: widget.undoIcon ?? Icon(Icons.reply, color: Colors.grey[700]),
