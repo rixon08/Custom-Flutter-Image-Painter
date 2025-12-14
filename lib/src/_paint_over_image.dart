@@ -732,6 +732,7 @@ class ImagePainterState extends State<ImagePainter> {
                 .map(
                   (item) => SelectionItems(
                     data: item,
+                    unselectedColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
                     isSelected: _controller.mode == item.mode,
                     onTap: () {
                       if (widget.onPaintModeChanged != null) {
@@ -1016,9 +1017,7 @@ class ImagePainterState extends State<ImagePainter> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isSelected 
-                      ? Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[700]
-                          : Colors.grey[300]
+                      ? Colors.grey[300]
                       : Colors.transparent,
                 ),
                 child: Material(
@@ -1052,9 +1051,7 @@ class ImagePainterState extends State<ImagePainter> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isSelected 
-                      ? Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[700]
-                          : Colors.grey[300]
+                      ? Colors.grey[300]
                       : Colors.transparent,
                 ),
                 child: PopupMenuButton(
@@ -1126,9 +1123,7 @@ class ImagePainterState extends State<ImagePainter> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isSelected 
-                        ? Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[700]
-                            : Colors.grey[300]
+                        ? Colors.grey[300]
                         : Colors.transparent,
                   ),
                   child: Material(
