@@ -978,10 +978,28 @@ class ImagePainterState extends State<ImagePainter> {
   }
 
   Widget _buildVerticalControls() {
+    final iconColor = Theme.of(context).iconTheme.color ?? 
+        (Theme.of(context).brightness == Brightness.dark 
+            ? Colors.white 
+            : Colors.black87);
+    final backgroundColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.grey[900]!.withValues(alpha: 0.9)
+        : Colors.white.withValues(alpha: 0.9);
+    
     return Container(
-      padding: const EdgeInsets.all(10),
-      color: Colors.black.withValues(alpha: 0.7),
-      width: 80,
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -990,20 +1008,31 @@ class ImagePainterState extends State<ImagePainter> {
             builder: (_, __) {
               final icon = Icons.zoom_out_map;
               return Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode == PaintMode.none ? const ui.Color.fromARGB(255, 190, 190, 190) : Colors.transparent,
+                  color: _controller.mode == PaintMode.none 
+                      ? Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[700]
+                          : Colors.grey[300]
+                      : Colors.transparent,
                 ),
-                padding: const EdgeInsets.all(15),
-                child: InkWell(
-                  onTap: () {
-                    if (widget.onPaintModeChanged != null) {
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      if (widget.onPaintModeChanged != null) {
                         widget.onPaintModeChanged!(PaintMode.none);
                       }
                       _controller.setMode(PaintMode.none);
-                  },
-                  child: Icon(icon, color: Colors.grey[700])
-                )
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(icon, color: iconColor, size: 20),
+                    ),
+                  ),
+                ),
               );
             },
           ),
@@ -1014,88 +1043,132 @@ class ImagePainterState extends State<ImagePainter> {
                   .firstWhere((item) => item.mode == _paintButtonPaintMode)
                   .icon;
               return Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode != PaintMode.none ? const ui.Color.fromARGB(255, 190, 190, 190) : Colors.transparent,
+                  color: _controller.mode != PaintMode.none 
+                      ? Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[700]
+                          : Colors.grey[300]
+                      : Colors.transparent,
                 ),
-                padding: const EdgeInsets.all(5),
                 child: PopupMenuButton(
                   tooltip: textDelegate.changeMode,
                   shape: ContinuousRectangleBorder(
                     borderRadius: BorderRadius.circular(40),
                   ),
-                  icon: Icon(icon, color: Colors.grey[700]),
+                  icon: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(icon, color: iconColor, size: 20),
+                  ),
                   itemBuilder: (_) => [_showOptionsRow()],
-                )
+                ),
               );
             },
           ),
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
-              return PopupMenuButton(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: ContinuousRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                tooltip: textDelegate.changeColor,
-                icon: widget.colorIcon ??
-                    Container(
-                      padding: const EdgeInsets.all(2.0),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey),
-                        color: _controller.color,
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                child: PopupMenuButton(
+                  padding: EdgeInsets.zero,
+                  shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  tooltip: textDelegate.changeColor,
+                  icon: widget.colorIcon ??
+                      Container(
+                        padding: const EdgeInsets.all(6.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: iconColor.withValues(alpha: 0.5),
+                            width: 1.5,
+                          ),
+                          color: _controller.color,
+                        ),
+                        child: const SizedBox(width: 8, height: 8),
                       ),
-                    ),
-                itemBuilder: (_) => [_showColorPicker()],
+                  itemBuilder: (_) => [_showColorPicker()],
+                ),
               );
             },
           ),
-          PopupMenuButton(
-            tooltip: textDelegate.changeBrushSize,
-            shape: ContinuousRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: PopupMenuButton(
+              tooltip: textDelegate.changeBrushSize,
+              padding: EdgeInsets.zero,
+              shape: ContinuousRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              icon: Padding(
+                padding: const EdgeInsets.all(8),
+                child: widget.brushIcon ?? Icon(Icons.brush, color: iconColor, size: 20),
+              ),
+              itemBuilder: (_) => [_showRangeSlider()],
             ),
-            icon:
-                widget.brushIcon ?? Icon(Icons.brush, color: Colors.grey[700]),
-            itemBuilder: (_) => [_showRangeSlider()],
           ),
           AnimatedBuilder(
             animation: _controller,
             builder: (_, __) {
               if (_controller.canFill()) {
-                return Row(
-                  children: [
-                    Checkbox.adaptive(
-                      value: _controller.shouldFill,
-                      onChanged: (val) {
-                        _controller.update(fill: val);
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        _controller.update(fill: !_controller.shouldFill);
                       },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          _controller.shouldFill 
+                              ? Icons.format_color_fill 
+                              : Icons.format_color_fill_outlined,
+                          color: iconColor,
+                          size: 20,
+                        ),
+                      ),
                     ),
-                    Text(
-                      'Fill',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    )
-                  ],
+                  ),
                 );
               } else {
                 return const SizedBox();
               }
             },
           ),
-          
-          const SizedBox(height: 10),
-          IconButton(
-            tooltip: textDelegate.undo,
-            icon: widget.undoIcon ?? Icon(Icons.reply, color: Colors.grey[700]),
-            onPressed: () => _controller.undo(),
+          const SizedBox(height: 4),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _controller.undo(),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: widget.undoIcon ?? Icon(Icons.reply, color: iconColor, size: 20),
+                ),
+              ),
+            ),
           ),
-          IconButton(
-            tooltip: textDelegate.clearAllProgress,
-            icon: widget.clearAllIcon ??
-                Icon(Icons.clear, color: Colors.grey[700]),
-            onPressed: () => _controller.clear(),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _controller.clear(),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: widget.clearAllIcon ?? Icon(Icons.clear, color: iconColor, size: 20),
+                ),
+              ),
+            ),
           ),
         ],
       ),
