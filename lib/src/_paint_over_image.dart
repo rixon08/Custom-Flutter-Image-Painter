@@ -978,13 +978,16 @@ class ImagePainterState extends State<ImagePainter> {
   }
 
   Widget _buildVerticalControls() {
-    final iconColor = Theme.of(context).iconTheme.color ?? 
-        (Theme.of(context).brightness == Brightness.dark 
-            ? Colors.white 
-            : Colors.black87);
-    final backgroundColor = Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[900]!.withValues(alpha: 0.9)
-        : Colors.white.withValues(alpha: 0.9);
+    // final iconColor = Theme.of(context).iconTheme.color ?? 
+    //     (Theme.of(context).brightness == Brightness.dark 
+    //         ? Colors.white 
+    //         : Colors.black87);
+    // final backgroundColor = Theme.of(context).brightness == Brightness.dark
+    //     ? Colors.grey[900]!.withValues(alpha: 0.9)
+    //     : Colors.white.withValues(alpha: 0.9);
+
+    final iconColor = Colors.white;
+    final backgroundColor = Colors.black.withValues(alpha: 0.7);
     
     return Container(
       margin: const EdgeInsets.all(8),
@@ -1007,11 +1010,12 @@ class ImagePainterState extends State<ImagePainter> {
             animation: _controller,
             builder: (_, __) {
               final icon = Icons.zoom_out_map;
+              final isSelected = _controller.mode == PaintMode.none;
               return Container(
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode == PaintMode.none 
+                  color: isSelected 
                       ? Theme.of(context).brightness == Brightness.dark
                           ? Colors.grey[700]
                           : Colors.grey[300]
@@ -1028,8 +1032,8 @@ class ImagePainterState extends State<ImagePainter> {
                       _controller.setMode(PaintMode.none);
                     },
                     child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(icon, color: iconColor, size: 20),
+                      padding: const EdgeInsets.all(13),
+                      child: Icon(icon, color: isSelected ? Colors.black : iconColor, size: 20),
                     ),
                   ),
                 ),
@@ -1042,24 +1046,26 @@ class ImagePainterState extends State<ImagePainter> {
               final icon = paintModes(textDelegate)
                   .firstWhere((item) => item.mode == _paintButtonPaintMode)
                   .icon;
+              final isSelected = _controller.mode != PaintMode.none;
               return Container(
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _controller.mode != PaintMode.none 
+                  color: isSelected 
                       ? Theme.of(context).brightness == Brightness.dark
                           ? Colors.grey[700]
                           : Colors.grey[300]
                       : Colors.transparent,
                 ),
                 child: PopupMenuButton(
+                  padding: EdgeInsets.zero,
                   tooltip: textDelegate.changeMode,
                   shape: ContinuousRectangleBorder(
                     borderRadius: BorderRadius.circular(40),
                   ),
                   icon: Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Icon(icon, color: iconColor, size: 20),
+                    child: Icon(icon, color: isSelected ? Colors.black : iconColor, size: 20),
                   ),
                   itemBuilder: (_) => [_showOptionsRow()],
                 ),
@@ -1114,8 +1120,17 @@ class ImagePainterState extends State<ImagePainter> {
             animation: _controller,
             builder: (_, __) {
               if (_controller.canFill()) {
+                final isSelected = _controller.shouldFill;
                 return Container(
                   margin: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected 
+                        ? Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[700]
+                            : Colors.grey[300]
+                        : Colors.transparent,
+                  ),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -1124,12 +1139,12 @@ class ImagePainterState extends State<ImagePainter> {
                         _controller.update(fill: !_controller.shouldFill);
                       },
                       child: Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(13),
                         child: Icon(
-                          _controller.shouldFill 
+                          isSelected 
                               ? Icons.format_color_fill 
                               : Icons.format_color_fill_outlined,
-                          color: iconColor,
+                          color: isSelected ? Colors.black : iconColor,
                           size: 20,
                         ),
                       ),
