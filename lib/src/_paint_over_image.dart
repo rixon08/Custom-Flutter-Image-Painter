@@ -508,6 +508,8 @@ class ImagePainterState extends State<ImagePainter> {
   }
 
   ///paints image on given constrains for drawing if image is not null.
+  
+  
   Widget _paintImage() {
     return Container(
       height: widget.height ?? double.maxFinite,
@@ -518,31 +520,34 @@ class ImagePainterState extends State<ImagePainter> {
           Column(
             children: [
               Expanded(
-                child: ClipRect(
-                  child: AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, child) {
-                      return InteractiveViewer(
-                        boundaryMargin: EdgeInsets.all(100),
-                        transformationController: _transformationController,
-                        maxScale: 8.0,
-                        minScale: 1,
-                        panEnabled: _controller.mode == PaintMode.none,
-                        scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
-                        onInteractionUpdate: _scaleUpdateGesture,
-                        onInteractionStart: _scaleStartGesturePin,
-                        onInteractionEnd: _scaleEndGesture,
-                        child: CustomPaint(
-                          size: imageSize,
-                          willChange: true,
-                          isComplex: true,
-                          painter: DrawImage(
-                            image: _image,
-                            controller: _controller,
+                child: FittedBox(
+                  alignment: FractionalOffset.center,
+                  child: ClipRect(
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return InteractiveViewer(
+                          boundaryMargin: EdgeInsets.all(100),
+                          transformationController: _transformationController,
+                          maxScale: 8.0,
+                          minScale: 1,
+                          panEnabled: _controller.mode == PaintMode.none,
+                          scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
+                          onInteractionUpdate: _scaleUpdateGesture,
+                          onInteractionStart: _scaleStartGesturePin,
+                          onInteractionEnd: _scaleEndGesture,
+                          child: CustomPaint(
+                            size: imageSize,
+                            willChange: true,
+                            isComplex: true,
+                            painter: DrawImage(
+                              image: _image,
+                              controller: _controller,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -554,6 +559,53 @@ class ImagePainterState extends State<ImagePainter> {
         ])
     );
   }
+  
+  /*
+  Widget _paintImage() {
+    return Container(
+      height: widget.height ?? double.maxFinite,
+      width: widget.width ?? double.maxFinite,
+      child: Column(
+        children: [
+          if (widget.controlsAtTop && widget.showControls) _buildControls(),
+          Expanded(
+            child: FittedBox(
+              alignment: FractionalOffset.center,
+              child: ClipRect(
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return InteractiveViewer(
+                      transformationController: _transformationController,
+                      maxScale: 8.0,
+                      minScale: 1,
+                      panEnabled: _controller.mode == PaintMode.none,
+                      scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
+                      onInteractionUpdate: _scaleUpdateGesture,
+                      onInteractionStart: _scaleStartGesturePin,
+                      onInteractionEnd: _scaleEndGesture,
+                      child: CustomPaint(
+                        size: imageSize,
+                        willChange: true,
+                        isComplex: true,
+                        painter: DrawImage(
+                          image: _image,
+                          controller: _controller,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          if (!widget.controlsAtTop && widget.showControls) _buildControls(),
+          SizedBox(height: MediaQuery.of(context).padding.bottom)
+        ],
+      ),
+    );
+  }
+  */
 
   Widget _paintSignature() {
     return Stack(
