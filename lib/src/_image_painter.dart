@@ -16,6 +16,12 @@ class DrawImage extends CustomPainter {
   ///The background for signature painting.
   final Color? backgroundColor;
 
+  ///Ukuran display (screen) untuk scaling
+  final Size? displaySize;
+
+  ///Ukuran asli gambar
+  final Size? imageSize;
+
   //Controller is a listenable with all of the paint details.
   late Controller _controller;
 
@@ -25,12 +31,26 @@ class DrawImage extends CustomPainter {
     this.image,
     this.isSignature = false,
     this.backgroundColor,
+    this.displaySize,
+    this.imageSize,
   }) : super(repaint: controller) {
     _controller = controller;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Jika ada displaySize dan imageSize, berarti sedang display (bukan render)
+    // Perlu scale canvas untuk menampilkan gambar dan drawing dengan benar
+    final isDisplayMode = displaySize != null && imageSize != null;
+    final scaleX = isDisplayMode ? displaySize!.width / imageSize!.width : 1.0;
+    final scaleY = isDisplayMode ? displaySize!.height / imageSize!.height : 1.0;
+    
+    if (isDisplayMode) {
+      // Scale canvas untuk display
+      canvas.save();
+      canvas.scale(scaleX, scaleY);
+    }
+    
     if (isSignature) {
       ///Paints background for signature.
       canvas.drawRect(
@@ -40,14 +60,22 @@ class DrawImage extends CustomPainter {
             ..color = backgroundColor!);
     } else {
       ///paints [ui.Image] on the canvas for reference to draw over it.
+      // Paint image dengan ukuran asli (karena canvas sudah di-scale jika display mode)
+      final imageRect = isDisplayMode 
+          ? Rect.fromPoints(
+              const Offset(0, 0),
+              Offset(imageSize!.width, imageSize!.height),
+            )
+          : Rect.fromPoints(
+              const Offset(0, 0),
+              Offset(size.width, size.height),
+            );
+      
       paintImage(
         canvas: canvas,
         image: image!,
         filterQuality: FilterQuality.high,
-        rect: Rect.fromPoints(
-          const Offset(0, 0),
-          Offset(size.width, size.height),
-        ),
+        rect: imageRect,
       );
     }
 
@@ -201,6 +229,10 @@ class DrawImage extends CustomPainter {
     }
 
     ///Draws all the completed actions of painting on the canvas.
+    
+    if (isDisplayMode) {
+      canvas.restore();
+    }
   }
 
   ///Draws line as well as the arrowhead on top of it.

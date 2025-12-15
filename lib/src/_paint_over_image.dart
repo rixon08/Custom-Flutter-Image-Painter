@@ -378,6 +378,10 @@ class ImagePainterState extends State<ImagePainter> {
 
   int _strokeMultiplier = 1;
   late TextDelegate textDelegate;
+  
+  // Variabel untuk menyimpan scale factor dari display size ke image size
+  double _displayScaleX = 1.0;
+  double _displayScaleY = 1.0;
   @override
   void initState() {
     super.initState();
@@ -522,25 +526,58 @@ class ImagePainterState extends State<ImagePainter> {
                   child: AnimatedBuilder(
                     animation: _controller,
                     builder: (context, child) {
-                      return InteractiveViewer(
-                        boundaryMargin: EdgeInsets.all(100),
-                        transformationController: _transformationController,
-                        maxScale: 8.0,
-                        minScale: 1,
-                        panEnabled: _controller.mode == PaintMode.none,
-                        scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
-                        onInteractionUpdate: _scaleUpdateGesture,
-                        onInteractionStart: _scaleStartGesturePin,
-                        onInteractionEnd: _scaleEndGesture,
-                        child: CustomPaint(
-                          size: imageSize,
-                          willChange: true,
-                          isComplex: true,
-                          painter: DrawImage(
-                            image: _image,
-                            controller: _controller,
-                          ),
-                        ),
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Hitung ukuran display yang fit layar dengan aspect ratio
+                          final imageAspectRatio = imageSize.width / imageSize.height;
+                          final screenAspectRatio = constraints.maxWidth / constraints.maxHeight;
+                          
+                          double displayWidth;
+                          double displayHeight;
+                          
+                          if (imageAspectRatio > screenAspectRatio) {
+                            // Image lebih lebar - fit ke width
+                            displayWidth = constraints.maxWidth;
+                            displayHeight = displayWidth / imageAspectRatio;
+                          } else {
+                            // Image lebih tinggi - fit ke height
+                            displayHeight = constraints.maxHeight;
+                            displayWidth = displayHeight * imageAspectRatio;
+                          }
+                          
+                          // Simpan scale factor untuk transformasi koordinat
+                          _displayScaleX = displayWidth / imageSize.width;
+                          _displayScaleY = displayHeight / imageSize.height;
+                          
+                          return InteractiveViewer(
+                            boundaryMargin: EdgeInsets.all(100),
+                            transformationController: _transformationController,
+                            maxScale: 8.0,
+                            minScale: 1,
+                            panEnabled: _controller.mode == PaintMode.none,
+                            scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
+                            onInteractionUpdate: _scaleUpdateGesture,
+                            onInteractionStart: _scaleStartGesturePin,
+                            onInteractionEnd: _scaleEndGesture,
+                            child: Center(
+                              child: SizedBox(
+                                width: displayWidth,
+                                height: displayHeight,
+                                child: CustomPaint(
+                                  size: Size(displayWidth, displayHeight),
+                                  willChange: true,
+                                  isComplex: true,
+                                  painter: DrawImage(
+                                    image: _image,
+                                    controller: _controller,
+                                    displaySize: Size(displayWidth, displayHeight),
+                                    imageSize: imageSize,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -617,23 +654,33 @@ class ImagePainterState extends State<ImagePainter> {
   _scaleStartGesture(ScaleStartDetails onStart) {
     final _zoomAdjustedOffset =
         _transformationController.toScene(onStart.localFocalPoint);
+    // Transform dari display space ke image space
+    final imageSpaceOffset = Offset(
+      _zoomAdjustedOffset.dx / _displayScaleX,
+      _zoomAdjustedOffset.dy / _displayScaleY,
+    );
     if (!widget.isSignature) {
-      _controller.setStart(_zoomAdjustedOffset);
-      _controller.addOffsets(_zoomAdjustedOffset);
+      _controller.setStart(imageSpaceOffset);
+      _controller.addOffsets(imageSpaceOffset);
     }
   }
 
   void _scaleStartGesturePin(ScaleStartDetails onUpdate) {
     final _zoomAdjustedOffset =
         _transformationController.toScene(onUpdate.localFocalPoint);
+    // Transform dari display space ke image space
+    final imageSpaceOffset = Offset(
+      _zoomAdjustedOffset.dx / _displayScaleX,
+      _zoomAdjustedOffset.dy / _displayScaleY,
+    );
     
     if (onUpdate.pointerCount < 2) {
       log(onUpdate.pointerCount.toString());
       _controller.setInProgress(true);
       if (_controller.start == null) {
-        _controller.setStart(_zoomAdjustedOffset);
+        _controller.setStart(imageSpaceOffset);
       }
-      _controller.setEnd(_zoomAdjustedOffset);
+      _controller.setEnd(imageSpaceOffset);
       if (_controller.mode == PaintMode.pin) {
          _addEndPoints();
         // _addPaintHistory(
@@ -655,21 +702,28 @@ class ImagePainterState extends State<ImagePainter> {
   void _scaleUpdateGesture(ScaleUpdateDetails onUpdate) {
     final _zoomAdjustedOffset =
         _transformationController.toScene(onUpdate.localFocalPoint);
-        if (onUpdate.pointerCount < 2) {
-    _controller.setInProgress(true);
-    if (_controller.start == null) {
-      _controller.setStart(_zoomAdjustedOffset);
-    }
-    _controller.setEnd(_zoomAdjustedOffset);
-    if (_controller.mode == PaintMode.freeStyle) {
-      _controller.addOffsets(_zoomAdjustedOffset);
-    }
+    // Transform dari display space ke image space
+    final imageSpaceOffset = Offset(
+      _zoomAdjustedOffset.dx / _displayScaleX,
+      _zoomAdjustedOffset.dy / _displayScaleY,
+    );
     
-    if (_controller.onTextUpdateMode) {
-      _controller.paintHistory
-          .lastWhere((element) => element.mode == PaintMode.text)
-          .offsets = [_zoomAdjustedOffset];
-    }}
+    if (onUpdate.pointerCount < 2) {
+      _controller.setInProgress(true);
+      if (_controller.start == null) {
+        _controller.setStart(imageSpaceOffset);
+      }
+      _controller.setEnd(imageSpaceOffset);
+      if (_controller.mode == PaintMode.freeStyle) {
+        _controller.addOffsets(imageSpaceOffset);
+      }
+      
+      if (_controller.onTextUpdateMode) {
+        _controller.paintHistory
+            .lastWhere((element) => element.mode == PaintMode.text)
+            .offsets = [imageSpaceOffset];
+      }
+    }
   }
 
 
