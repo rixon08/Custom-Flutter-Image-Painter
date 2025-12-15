@@ -521,30 +521,33 @@ class ImagePainterState extends State<ImagePainter> {
             Column(
               children: [
                 Expanded(
-                  child: ClipRect(
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return InteractiveViewer(
-                          transformationController: _transformationController,
-                          maxScale: 8.0,
-                          minScale: 1,
-                          panEnabled: _controller.mode == PaintMode.none,
-                          scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
-                          onInteractionUpdate: _scaleUpdateGesture,
-                          onInteractionStart: _scaleStartGesturePin,
-                          onInteractionEnd: _scaleEndGesture,
-                          child: CustomPaint(
-                            size: imageSize,
-                            willChange: true,
-                            isComplex: true,
-                            painter: DrawImage(
-                              image: _image,
-                              controller: _controller,
+                  child: FittedBox(
+                    alignment: FractionalOffset.center,
+                    child: ClipRect(
+                      child: AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return InteractiveViewer(
+                            transformationController: _transformationController,
+                            maxScale: 8.0,
+                            minScale: 1,
+                            panEnabled: _controller.mode == PaintMode.none,
+                            scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
+                            onInteractionUpdate: _scaleUpdateGesture,
+                            onInteractionStart: _scaleStartGesturePin,
+                            onInteractionEnd: _scaleEndGesture,
+                            child: CustomPaint(
+                              size: imageSize,
+                              willChange: true,
+                              isComplex: true,
+                              painter: DrawImage(
+                                image: _image,
+                                controller: _controller,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
