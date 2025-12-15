@@ -526,7 +526,6 @@ class ImagePainterState extends State<ImagePainter> {
                       animation: _controller,
                       builder: (context, child) {
                         return InteractiveViewer(
-                          boundaryMargin: EdgeInsets.all(100),
                           transformationController: _transformationController,
                           maxScale: 8.0,
                           minScale: 1,
