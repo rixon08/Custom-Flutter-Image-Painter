@@ -517,42 +517,44 @@ class ImagePainterState extends State<ImagePainter> {
       child: Stack (
         alignment: Alignment.topRight,
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: FittedBox(
-                  alignment: FractionalOffset.center,
-                  child: ClipRect(
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return InteractiveViewer(
-                          boundaryMargin: EdgeInsets.all(100),
-                          transformationController: _transformationController,
-                          maxScale: 8.0,
-                          minScale: 1,
-                          panEnabled: _controller.mode == PaintMode.none,
-                          scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
-                          onInteractionUpdate: _scaleUpdateGesture,
-                          onInteractionStart: _scaleStartGesturePin,
-                          onInteractionEnd: _scaleEndGesture,
-                          child: CustomPaint(
-                            size: imageSize,
-                            willChange: true,
-                            isComplex: true,
-                            painter: DrawImage(
-                              image: _image,
-                              controller: _controller,
+          Center(child: 
+            Column(
+              children: [
+                Expanded(
+                  child: FittedBox(
+                    alignment: FractionalOffset.center,
+                    child: ClipRect(
+                      child: AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, child) {
+                          return InteractiveViewer(
+                            boundaryMargin: EdgeInsets.all(100),
+                            transformationController: _transformationController,
+                            maxScale: 8.0,
+                            minScale: 1,
+                            panEnabled: _controller.mode == PaintMode.none,
+                            scaleEnabled: widget.isScalable! || _controller.mode == PaintMode.none,
+                            onInteractionUpdate: _scaleUpdateGesture,
+                            onInteractionStart: _scaleStartGesturePin,
+                            onInteractionEnd: _scaleEndGesture,
+                            child: CustomPaint(
+                              size: imageSize,
+                              willChange: true,
+                              isComplex: true,
+                              painter: DrawImage(
+                                image: _image,
+                                controller: _controller,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: MediaQuery.of(context).padding.bottom)
-            ],
+                SizedBox(height: MediaQuery.of(context).padding.bottom)
+              ],
+            ),
           ),
           if (widget.showControls) 
             _buildVerticalControls(),
