@@ -493,7 +493,7 @@ class ImagePainterState extends State<ImagePainter> {
       valueListenable: _isLoaded,
       builder: (_, loaded, __) {
         if (loaded) {
-          return widget.isSignature ? _paintSignature() : _paintImage();
+          return Center(child: widget.isSignature ? _paintSignature() : _paintImage());
         } else {
           return Container(
             height: widget.height ?? double.maxFinite,
