@@ -554,7 +554,11 @@ class ImagePainterState extends State<ImagePainter> {
             ),
           ),
           if (widget.showControls) 
-            _buildVerticalControls(),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _buildVerticalControls(),
+            ),
         ])
     );
   }
